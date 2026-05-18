@@ -15,12 +15,13 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
-            font-family: 'Quicksand', sans-serif;
-            background-color: #f0f7f4;
-            user-select: none;
-            overflow: hidden;
-        }
+       body {
+    font-family: 'Quicksand', sans-serif;
+    background-color: #f0f7f4;
+    user-select: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
         h1, h2, h3, .font-kids {
             font-family: 'Fredoka', sans-serif;
         }
@@ -45,9 +46,9 @@
             width: 100%;
             height: 100%;
         }
+        
     </style>
 </head>
-<body class="relative h-screen w-screen flex flex-col justify-between overflow-hidden">
 
 <!-- Introductory Storybook Overlay -->
 <div id="introOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-[#e3f2fd] via-[#f1f8e9] to-[#e8f5e9] transition-opacity duration-1000">
@@ -146,7 +147,7 @@
 </header>
 
 <!-- Central Canvas/Visual Playground Container -->
-<main class="flex-1 w-full max-w-6xl mx-auto px-4 relative my-2 flex items-center justify-center">
+<main class="flex-1 w-full max-w-6xl mx-auto px-4 relative my-6 flex items-center justify-center min-h-[700px]">
     <div class="w-full h-full rounded-3xl overflow-hidden relative border-4 border-emerald-800/10 shadow-2xl bg-[#a3b18a] flex items-center justify-center">
         <!-- Interactive Canvas -->
         <canvas id="natureCanvas"></canvas>
