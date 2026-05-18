@@ -20,7 +20,9 @@
     background-color: #f0f7f4;
     user-select: none;
     overflow-x: hidden;
-    overflow-y: auto;
+overflow-y: auto;
+overscroll-behavior: none;
+-webkit-overflow-scrolling: touch;
 }
         h1, h2, h3, .font-kids {
             font-family: 'Fredoka', sans-serif;
@@ -50,9 +52,11 @@
     </style>
 </head>
 
+<body class="relative min-h-screen w-screen flex flex-col justify-between overflow-x-hidden overflow-y-auto">
+
 <!-- Introductory Storybook Overlay -->
 <div id="introOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-[#e3f2fd] via-[#f1f8e9] to-[#e8f5e9] transition-opacity duration-1000">
-    <div class="max-w-2xl p-8 md:p-12 rounded-3xl bg-white/95 shadow-2xl border-4 border-emerald-200 flex flex-col items-center gap-6 relative overflow-hidden">
+    <div class="max-w-2xl p-5 sm:p-8 md:p-12 rounded-3xl bg-white/95 shadow-2xl border-4 border-emerald-200 flex flex-col items-center gap-6 relative overflow-hidden">
         <!-- Tested Mini Game Verification Badge -->
         <div class="z-10 bg-emerald-100/90 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-300 shadow-sm animate-pulse">
             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 fill-emerald-200"></i>
@@ -103,7 +107,7 @@
 
 <!-- Top Dashboard Panel (Pip the Guide and Status Bar) -->
 <header class="w-full max-w-6xl mx-auto px-4 pt-4 z-10">
-    <div class="glass-panel rounded-2xl p-3 md:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+    <div class="glass-panel rounded-2xl p-3 md:p-4 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-xl">
         <!-- Pip Mascot Feedback Box -->
         <div class="flex items-center gap-4 w-full sm:w-auto">
             <div id="pipMascot" class="w-16 h-16 bg-emerald-50 rounded-full border-2 border-emerald-400 flex-shrink-0 flex items-center justify-center shadow-inner relative cursor-pointer">
@@ -147,8 +151,8 @@
 </header>
 
 <!-- Central Canvas/Visual Playground Container -->
-<main class="flex-1 w-full max-w-6xl mx-auto px-4 relative my-6 flex items-center justify-center min-h-[700px]">
-    <div class="w-full h-full rounded-3xl overflow-hidden relative border-4 border-emerald-800/10 shadow-2xl bg-[#a3b18a] flex items-center justify-center">
+<main class="flex-1 w-full max-w-6xl mx-auto px-3 sm:px-4 relative my-4 md:my-6 flex items-center justify-center min-h-[500px] sm:min-h-[650px] md:min-h-[700px]">
+    <div class="w-full h-[65vh] sm:h-[70vh] md:h-full rounded-3xl overflow-hidden relative border-4 border-emerald-800/10 shadow-2xl bg-[#a3b18a] flex items-center justify-center">
         <!-- Interactive Canvas -->
         <canvas id="natureCanvas"></canvas>
 
@@ -170,9 +174,9 @@
     <div class="glass-panel rounded-2xl p-3 md:p-4 flex flex-col items-center justify-between gap-3 shadow-xl relative overflow-hidden">
         <h3 class="text-stone-700 font-bold text-sm tracking-wide text-center uppercase">Choose a Magic Action Tool:</h3>
         
-        <div class="flex justify-center items-center gap-4 md:gap-8 w-full">
+        <div class="flex justify-center items-center gap-3 sm:gap-4 md:gap-8 w-full flex-wrap">
             <!-- Tool 1: Clear Smog -->
-            <button id="toolSmog" class="tool-btn flex flex-col items-center gap-2 p-3 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-28 hover:shadow-md hover:scale-105 active:scale-95">
+            <button id="toolSmog" class="tool-btn flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-24 sm:w-28 md:w-32 hover:shadow-md hover:scale-105 active:scale-95">
                 <div class="w-12 h-12 bg-sky-100 text-sky-500 rounded-full flex items-center justify-center border-2 border-sky-300">
                     <i data-lucide="wind" class="w-6 h-6"></i>
                 </div>
@@ -181,7 +185,7 @@
             </button>
 
             <!-- Tool 2: Clean River Trash -->
-            <button id="toolWater" class="tool-btn flex flex-col items-center gap-2 p-3 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-28 hover:shadow-md hover:scale-105 active:scale-95">
+            <button id="toolWater" class="tool-btn flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-24 sm:w-28 md:w-32 hover:shadow-md hover:scale-105 active:scale-95">
                 <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center border-2 border-blue-300">
                     <i data-lucide="sparkles" class="w-6 h-6"></i>
                 </div>
@@ -190,7 +194,7 @@
             </button>
 
             <!-- Tool 3: Magic Sprouts -->
-            <button id="toolPlant" class="tool-btn flex flex-col items-center gap-2 p-3 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-28 hover:shadow-md hover:scale-105 active:scale-95">
+            <button id="toolPlant" class="tool-btn flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-24 sm:w-28 md:w-32 hover:shadow-md hover:scale-105 active:scale-95">
                 <div class="w-12 h-12 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center border-2 border-emerald-300">
                     <i data-lucide="sprout" class="w-6 h-6"></i>
                 </div>
@@ -413,13 +417,16 @@
     };
 
     // Responsive Canvas Settings
-    function resizeCanvas() {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-    }
+  function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+}
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -602,7 +609,7 @@
         contains(mx, my) {
             const dx = mx - this.x;
             const dy = my - this.y;
-            return (dx * dx + dy * dy) < (this.size * this.size);
+            return (dx * dx + dy * dy) < ((this.size + 18) * (this.size + 18));
         }
     }
 
