@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nature is Talking - Interactive Experience</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Google Fonts: Fredoka & Quicksand for a soft, child-friendly editorial style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f7f4;
+            user-select: none;
+            overflow: hidden;
+        }
+        h1, h2, h3, .font-kids {
+            font-family: 'Fredoka', sans-serif;
+        }
+        /* Custom scrollbar-free full-height viewport styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        /* Pulse animations for interaction prompts */
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        .pulse-element {
+            animation: gentle-pulse 3s infinite ease-in-out;
+        }
+        /* Canvas sizing */
+        #natureCanvas {
+            touch-action: none;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="relative h-screen w-screen flex flex-col justify-between overflow-hidden">
+
+<!-- Introductory Storybook Overlay -->
+<div id="introOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-[#e3f2fd] via-[#f1f8e9] to-[#e8f5e9] transition-opacity duration-1000">
+    <div class="max-w-2xl p-8 md:p-12 rounded-3xl bg-white/95 shadow-2xl border-4 border-emerald-200 flex flex-col items-center gap-6 relative overflow-hidden">
+        <!-- Tested Mini Game Verification Badge -->
+        <div class="z-10 bg-emerald-100/90 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-300 shadow-sm animate-pulse">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 fill-emerald-200"></i>
+            <span>Tested Mini Game • Certified Fun ✅</span>
+        </div>
+
+        <!-- Floating ambient decoration leaves inside intro -->
+        <div class="absolute top-4 left-4 text-emerald-300 opacity-60 animate-bounce" style="animation-duration: 4s;"><i data-lucide="leaf" class="w-8 h-8"></i></div>
+        <div class="absolute bottom-6 right-8 text-emerald-400 opacity-60 animate-bounce" style="animation-duration: 5s;"><i data-lucide="sprout" class="w-10 h-10"></i></div>
+        <div class="absolute top-8 right-12 text-sky-300 opacity-60 animate-bounce" style="animation-duration: 3s;"><i data-lucide="cloud-sun" class="w-12 h-12"></i></div>
+
+        <!-- Mascot Illustration (Pip) in Intro -->
+        <div class="w-28 h-28 bg-emerald-100 rounded-full flex items-center justify-center border-4 border-emerald-400 relative pulse-element shadow-lg">
+            <svg viewBox="0 0 100 100" class="w-20 h-20">
+                <!-- Soft Green Leaf Mascot -->
+                <path d="M50,15 C75,15 85,45 80,70 C70,90 30,90 20,70 C15,45 25,15 50,15 Z" fill="#66bb6a"/>
+                <!-- Cheerful Eyes -->
+                <circle cx="38" cy="50" r="5" fill="#2e7d32"/>
+                <circle cx="62" cy="50" r="5" fill="#2e7d32"/>
+                <circle cx="39" cy="48" r="1.5" fill="#fff"/>
+                <circle cx="63" cy="48" r="1.5" fill="#fff"/>
+                <!-- Blush Rosy Cheeks -->
+                <circle cx="32" cy="58" r="4" fill="#ff8a80" opacity="0.8"/>
+                <circle cx="68" cy="58" r="4" fill="#ff8a80" opacity="0.8"/>
+                <!-- Happy Curved Smile -->
+                <path d="M44,60 Q50,65 56,60" stroke="#2e7d32" stroke-width="3" stroke-linecap="round" fill="none"/>
+                <!-- Little Wooden Stem/Antenna -->
+                <path d="M50,15 Q50,5 55,2" stroke="#8d6e63" stroke-width="4" stroke-linecap="round" fill="none"/>
+            </svg>
+        </div>
+
+        <h1 class="text-4xl md:text-5xl font-bold text-emerald-800 tracking-tight leading-tight">
+            Nature is Whispering...
+        </h1>
+        <p class="text-sm font-bold tracking-wider text-emerald-600 uppercase -mt-4">Created by Zaina Alissa</p>
+        <p class="text-lg md:text-xl text-stone-600 leading-relaxed font-semibold">
+            The sky is smoky, the river is messy, and the forest has gone quiet. 
+            Can you help make the world colorful and happy again?
+        </p>
+
+        <button id="startBtn" class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xl rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-3 border-b-4 border-emerald-700">
+            <span>Yes, I'll Help!</span>
+            <i data-lucide="heart" class="w-6 h-6 fill-white"></i>
+        </button>
+        <span class="text-xs text-stone-400 italic">Turn on your sound for a magical experience! 🌟</span>
+    </div>
+</div>
+
+<!-- Top Dashboard Panel (Pip the Guide and Status Bar) -->
+<header class="w-full max-w-6xl mx-auto px-4 pt-4 z-10">
+    <div class="glass-panel rounded-2xl p-3 md:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+        <!-- Pip Mascot Feedback Box -->
+        <div class="flex items-center gap-4 w-full sm:w-auto">
+            <div id="pipMascot" class="w-16 h-16 bg-emerald-50 rounded-full border-2 border-emerald-400 flex-shrink-0 flex items-center justify-center shadow-inner relative cursor-pointer">
+                <!-- SVG Leaf Spirit -->
+                <svg viewBox="0 0 100 100" class="w-12 h-12 transform transition-all duration-300 hover:scale-110">
+                    <path d="M50,15 C75,15 85,45 80,70 C70,90 30,90 20,70 C15,45 25,15 50,15 Z" fill="#81c784"/>
+                    <circle cx="38" cy="50" r="5" fill="#2e7d32"/>
+                    <circle cx="62" cy="50" r="5" fill="#2e7d32"/>
+                    <circle cx="39" cy="48" r="1.5" fill="#fff"/>
+                    <circle cx="63" cy="48" r="1.5" fill="#fff"/>
+                    <circle cx="32" cy="58" r="4" fill="#ff8a80" opacity="0.8"/>
+                    <circle cx="68" cy="58" r="4" fill="#ff8a80" opacity="0.8"/>
+                    <path id="pipSmile" d="M44,60 Q50,65 56,60" stroke="#2e7d32" stroke-width="3" stroke-linecap="round" fill="none"/>
+                </svg>
+            </div>
+            <!-- Bubble Message -->
+            <div class="relative bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2 text-stone-700 font-semibold text-sm md:text-base shadow-sm flex-1">
+                <div class="absolute left-[-8px] top-6 w-0 h-0 border-t-[8px] border-t-transparent border-r-[8px] border-r-emerald-50 border-b-[8px] border-b-transparent"></div>
+                <p id="pipBubbleText">Hello, Nature Protector! Pick a tool below to begin cleaning up.</p>
+            </div>
+        </div>
+
+        <!-- Progress Tracker Grid -->
+        <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap justify-end w-full sm:w-auto">
+            <div class="flex gap-2 text-sm font-semibold">
+                <div id="badgeSmog" class="px-3 py-1 bg-stone-100 text-stone-500 rounded-full border border-stone-200 flex items-center gap-1">
+                    <i data-lucide="cloud-sun" class="w-4 h-4"></i> Sky
+                </div>
+                <div id="badgeRiver" class="px-3 py-1 bg-stone-100 text-stone-500 rounded-full border border-stone-200 flex items-center gap-1">
+                    <i data-lucide="droplet" class="w-4 h-4"></i> River
+                </div>
+                <div id="badgeForest" class="px-3 py-1 bg-stone-100 text-stone-500 rounded-full border border-stone-200 flex items-center gap-1">
+                    <i data-lucide="sprout" class="w-4 h-4"></i> Forest
+                </div>
+            </div>
+            <button id="resetBtn" class="p-2 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-600 hover:text-stone-800 transition" title="Start Over">
+                <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Central Canvas/Visual Playground Container -->
+<main class="flex-1 w-full max-w-6xl mx-auto px-4 relative my-2 flex items-center justify-center">
+    <div class="w-full h-full rounded-3xl overflow-hidden relative border-4 border-emerald-800/10 shadow-2xl bg-[#a3b18a] flex items-center justify-center">
+        <!-- Interactive Canvas -->
+        <canvas id="natureCanvas"></canvas>
+
+        <!-- Dynamic On-Screen Interaction Guides -->
+        <div id="interactionGuide" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/90 px-6 py-2.5 rounded-full border-2 border-emerald-400 text-emerald-800 font-bold text-center pointer-events-none shadow-lg opacity-0 transition-opacity duration-300 z-10">
+            Choose a tool below!
+        </div>
+        
+        <!-- Recycler Hub Bin Visual Indicator (Only shows when Splash tool is active) -->
+        <div id="recycleBinOverlay" class="absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-emerald-100/90 border-4 border-dashed border-emerald-500 rounded-2xl flex flex-col items-center justify-center gap-2 text-emerald-800 opacity-0 pointer-events-none transition-all duration-300 w-36 shadow-lg">
+            <div class="animate-bounce text-emerald-600"><i data-lucide="trash-2" class="w-8 h-8"></i></div>
+            <span class="text-xs font-bold uppercase tracking-wider text-center">Drag Trash Here!</span>
+        </div>
+    </div>
+</main>
+
+<!-- Bottom Tool Selection Hud -->
+<footer class="w-full max-w-6xl mx-auto px-4 pb-4 z-10">
+    <div class="glass-panel rounded-2xl p-3 md:p-4 flex flex-col items-center justify-between gap-3 shadow-xl relative overflow-hidden">
+        <h3 class="text-stone-700 font-bold text-sm tracking-wide text-center uppercase">Choose a Magic Action Tool:</h3>
+        
+        <div class="flex justify-center items-center gap-4 md:gap-8 w-full">
+            <!-- Tool 1: Clear Smog -->
+            <button id="toolSmog" class="tool-btn flex flex-col items-center gap-2 p-3 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-28 hover:shadow-md hover:scale-105 active:scale-95">
+                <div class="w-12 h-12 bg-sky-100 text-sky-500 rounded-full flex items-center justify-center border-2 border-sky-300">
+                    <i data-lucide="wind" class="w-6 h-6"></i>
+                </div>
+                <span class="font-kids font-bold text-sm">Magic Wind</span>
+                <span class="text-[10px] text-stone-400">Clear Smog</span>
+            </button>
+
+            <!-- Tool 2: Clean River Trash -->
+            <button id="toolWater" class="tool-btn flex flex-col items-center gap-2 p-3 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-28 hover:shadow-md hover:scale-105 active:scale-95">
+                <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center border-2 border-blue-300">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                </div>
+                <span class="font-kids font-bold text-sm">Clean Hand</span>
+                <span class="text-[10px] text-stone-400">Recycle Trash</span>
+            </button>
+
+            <!-- Tool 3: Magic Sprouts -->
+            <button id="toolPlant" class="tool-btn flex flex-col items-center gap-2 p-3 rounded-2xl border-2 border-stone-200 bg-white/80 text-stone-600 transition-all duration-300 w-28 hover:shadow-md hover:scale-105 active:scale-95">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center border-2 border-emerald-300">
+                    <i data-lucide="sprout" class="w-6 h-6"></i>
+                </div>
+                <span class="font-kids font-bold text-sm">Magic Seeds</span>
+                <span class="text-[10px] text-stone-400">Grow Trees</span>
+            </button>
+        </div>
+    </div>
+    <!-- Footer Credits -->
+    <div class="text-center text-xs text-stone-500 font-semibold tracking-wider mt-3 flex items-center justify-center gap-2 flex-wrap">
+        <span>Created by <strong class="text-emerald-700">Zaina Alissa</strong></span>
+        <span class="text-stone-300 hidden sm:inline">|</span>
+        <span class="flex items-center gap-1 text-stone-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500 fill-emerald-100"></i> Tested Mini Game</span>
+    </div>
+</footer>
+
+<!-- Celebration Modal Overlay -->
+<div id="victoryOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-black/60 opacity-0 pointer-events-none transition-opacity duration-700">
+    <div id="victoryCard" class="max-w-xl p-8 md:p-12 rounded-3xl bg-gradient-to-b from-[#f9fbe7] to-[#e8f5e9] shadow-2xl border-4 border-yellow-300 flex flex-col items-center gap-6 relative scale-95 transition-transform duration-700">
+        <!-- Sunburst Backgound Light -->
+        <div class="absolute inset-0 w-full h-full bg-radial-gradient from-yellow-100 to-transparent opacity-50 -z-10 pointer-events-none"></div>
+        
+        <!-- Big Ribbon Medal Icon -->
+        <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center border-4 border-yellow-400 relative pulse-element shadow-lg">
+            <svg viewBox="0 0 100 100" class="w-16 h-16">
+                <!-- Golden Medal Star -->
+                <polygon points="50,15 59,38 84,38 64,53 71,78 50,63 29,78 36,53 16,38 41,38" fill="#fbc02d" stroke="#f57f17" stroke-width="3"/>
+                <!-- Sparkle points -->
+                <circle cx="20" cy="20" r="3" fill="#fff"/>
+                <circle cx="80" cy="20" r="4" fill="#fff"/>
+            </svg>
+        </div>
+
+        <h2 class="text-3xl md:text-4xl font-bold text-emerald-800 tracking-tight leading-tight">
+            Nature Smiles With You! 🎉
+        </h2>
+        <p class="text-lg text-stone-700 font-semibold leading-relaxed">
+            "Small actions grow big forests. You cleaned the skies, brightened the rivers, and brought beautiful trees back to life!"
+        </p>
+        
+        <!-- Victory Screen Developer & Test Status Credits -->
+        <div class="text-xs text-stone-600 font-bold tracking-wider uppercase bg-yellow-100/80 px-4 py-1.5 rounded-full border border-yellow-300 shadow-sm">
+            Created by <span class="text-emerald-800 font-extrabold">Zaina Alissa</span> • Tested Mini Game Complete ✅
+        </div>
+
+        <div class="flex gap-4">
+            <button id="victoryResetBtn" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span>Play Again</span>
+            </button>
+            <button id="closeVictoryBtn" class="px-6 py-3 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold text-lg rounded-full shadow-md transform transition hover:scale-105 active:scale-95">
+                Keep Exploring
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* Audio Synthesis Class using Web Audio API to prevent external resource load issues */
+    class KidsNatureAudio {
+        constructor() {
+            this.ctx = null;
+        }
+
+        init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        playChime(freq = 523.25) { // default C5
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            
+            // Core chime oscillator
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            
+            // Delicate sine sparkle overlay
+            const osc2 = this.ctx.createOscillator();
+            const gain2 = this.ctx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(freq * 1.5, now);
+            
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+            
+            gain2.gain.setValueAtTime(0, now);
+            gain2.gain.linearRampToValueAtTime(0.1, now + 0.03);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+            
+            osc.connect(gain);
+            osc2.connect(gain2);
+            gain.connect(this.ctx.destination);
+            gain2.connect(this.ctx.destination);
+            
+            osc.start(now);
+            osc2.start(now);
+            osc.stop(now + 1.3);
+            osc2.stop(now + 0.7);
+        }
+
+        playBubble() {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(200, now);
+            // Quick sweeping pitch up for the "pop" shape
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
+            
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.16);
+        }
+
+        playSwoosh() {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            // Noise generator for wind swoosh
+            const bufferSize = this.ctx.sampleRate * 0.4; // 0.4 seconds
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            
+            // Bandpass filter to make noise sound airy
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(300, now);
+            filter.frequency.exponentialRampToValueAtTime(1500, now + 0.2);
+            filter.frequency.exponentialRampToValueAtTime(600, now + 0.4);
+            filter.Q.value = 3;
+            
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            noise.start(now);
+            noise.stop(now + 0.4);
+        }
+
+        playSuccessFanfare() {
+            if (!this.ctx) return;
+            const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // Happy pentatonic chord
+            const now = this.ctx.currentTime;
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    this.playChime(freq);
+                }, index * 100);
+            });
+        }
+    }
+
+    const sfx = new KidsNatureAudio();
+</script>
+
+<script>
+    // System elements mapping
+    const canvas = document.getElementById('natureCanvas');
+    const ctx = canvas.getContext('2d');
+    const startBtn = document.getElementById('startBtn');
+    const introOverlay = document.getElementById('introOverlay');
+    const resetBtn = document.getElementById('resetBtn');
+    const victoryResetBtn = document.getElementById('victoryResetBtn');
+    const closeVictoryBtn = document.getElementById('closeVictoryBtn');
+    const victoryOverlay = document.getElementById('victoryOverlay');
+    const victoryCard = document.getElementById('victoryCard');
+
+    // Tool DOM Mapping
+    const tools = {
+        smog: document.getElementById('toolSmog'),
+        water: document.getElementById('toolWater'),
+        plant: document.getElementById('toolPlant')
+    };
+    
+    // Task Completion Mapping
+    const badges = {
+        smog: document.getElementById('badgeSmog'),
+        water: document.getElementById('badgeRiver'),
+        plant: document.getElementById('badgeForest')
+    };
+
+    const pipBubbleText = document.getElementById('pipBubbleText');
+    const pipSmile = document.getElementById('pipSmile');
+    const interactionGuide = document.getElementById('interactionGuide');
+    const recycleBinOverlay = document.getElementById('recycleBinOverlay');
+
+    // Central Simulation Parameters
+    let currentTool = null; // 'smog', 'water', or 'plant'
+    let state = {
+        smogPercentage: 100, // Starts completely polluted
+        cleanWaterPercentage: 0, // Water starts murky
+        plantedSeedsCount: 0, // Sprouted plant tally
+        trashCount: 6, // Active floating plastic pieces
+        completed: {
+            smog: false,
+            water: false,
+            plant: false
+        }
+    };
+
+    // Responsive Canvas Settings
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Leaf Mascot Emotion states
+    const MascotSay = {
+        greeting: [
+            "Hello, Nature Protector! Let's help cure our home together.",
+            "Choose a magic tool from the tray below to start making things green!"
+        ],
+        smogSelected: [
+            "Use the Magic Wind tool to brush away dark pollution from the sky!",
+            "Dust the clouds away! Swishing on the sky is so much fun!"
+        ],
+        waterSelected: [
+            "Can you help pick up plastic trash? Drag them straight to the green recycle bin on the right!",
+            "Look at those bottles hurting our river... Let's clean them up!"
+        ],
+        plantSelected: [
+            "Plant magic seeds! Click on the green soil to sprout gorgeous trees.",
+            "Every click sprouts a tree! Watch them burst to life!"
+        ],
+        smogPartiallyCleared: "Wow, look at that gorgeous warm sun shining through!",
+        smogFullyCleared: "The skies are perfectly clear! You brought sunshine back!",
+        waterPartiallyCleaned: "Amazing! The water is turning blue and sparkly again.",
+        waterFullyCleaned: "The river is pristine! Safe for all the fish to swim in.",
+        plantPartiallyGrown: "Splendid! Little baby sprouts are breathing healthy air.",
+        plantFullyGrown: "A full, beautiful magical forest! What an amazing protector!",
+        allCompleted: "We did it! Nature is humming happily once again! Tap below to celebrate!"
+    };
+
+    function updateMascotText(text, happy = true) {
+        pipBubbleText.textContent = text;
+        if (happy) {
+            // Soft smile arc
+            pipSmile.setAttribute('d', 'M44,60 Q50,67 56,60');
+        } else {
+            // Shocked O-face for action encouragement
+            pipSmile.setAttribute('d', 'M45,63 Q50,56 55,63');
+        }
+        gsap.fromTo('#pipMascot', { scale: 1.15 }, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.3)" });
+    }
+
+    // Audio Trigger helper on interaction
+    function speakPip(text, happy = true) {
+        updateMascotText(text, happy);
+        sfx.playChime(392); // Spark Pip speak vibe
+    }
+
+    /* Particle Classes and Assets for Canvas Simulation */
+    class SmogParticle {
+        constructor(w, h) {
+            this.x = Math.random() * w;
+            this.y = Math.random() * (h * 0.45); // top sky area
+            this.radius = Math.random() * 45 + 25;
+            this.vx = (Math.random() - 0.5) * 0.4;
+            this.vy = (Math.random() - 0.5) * 0.1;
+            this.opacity = Math.random() * 0.5 + 0.35;
+        }
+
+        update(w, h) {
+            this.x += this.vx;
+            this.y += this.vy;
+            // Bound constraints
+            if (this.x < -100) this.x = w + 100;
+            if (this.x > w + 100) this.x = -100;
+            if (this.y < -50) this.y = h * 0.45;
+            if (this.y > h * 0.45) this.y = -20;
+        }
+
+        draw() {
+            ctx.beginPath();
+            let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+            gradient.addColorStop(0, `rgba(110, 105, 115, ${this.opacity})`);
+            gradient.addColorStop(0.5, `rgba(125, 120, 130, ${this.opacity * 0.5})`);
+            gradient.addColorStop(1, 'rgba(125, 120, 130, 0)');
+            ctx.fillStyle = gradient;
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    class FloatingTrash {
+        constructor(w, h) {
+            this.w = w;
+            this.h = h;
+            this.reset();
+            // Stagger horizontal locations
+            this.x = Math.random() * (w - 200) + 100;
+        }
+
+        reset() {
+            this.y = this.h * 0.73 + (Math.random() * (this.h * 0.15)); // Water zone
+            this.size = Math.random() * 15 + 20;
+            this.angle = Math.random() * Math.PI * 2;
+            this.angularSpeed = (Math.random() - 0.5) * 0.02;
+            this.isDragged = false;
+            // Procedural aesthetic types: 0 = bottle, 1 = bag, 2 = metal can
+            this.type = Math.floor(Math.random() * 3);
+            this.phase = Math.random() * 100;
+        }
+
+        update() {
+            if (!this.isDragged) {
+                // Bobbing floating wave mechanics
+                this.angle += this.angularSpeed;
+                this.x += Math.sin(this.phase) * 0.2;
+                this.y += Math.cos(this.phase) * 0.05;
+                this.phase += 0.01;
+            }
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // Add smooth outer indicator drop-shadow when active
+            if (this.isDragged) {
+                ctx.shadowColor = 'rgba(255, 235, 59, 1)';
+                ctx.shadowBlur = 15;
+            }
+
+            if (this.type === 0) {
+                // Water Bottle Silhouette
+                ctx.fillStyle = "rgba(186, 215, 233, 0.8)";
+                ctx.strokeStyle = "rgba(100, 150, 200, 0.9)";
+                ctx.lineWidth = 2;
+                // Bottle neck and lid
+                ctx.fillRect(-6, -18, 12, 6);
+                ctx.strokeRect(-6, -18, 12, 6);
+                ctx.fillStyle = "#ff4d4d"; // Red cap
+                ctx.fillRect(-7, -22, 14, 4);
+                // Body
+                ctx.fillStyle = "rgba(186, 215, 233, 0.8)";
+                ctx.fillRect(-10, -12, 20, 24);
+                ctx.strokeRect(-10, -12, 20, 24);
+                // Soft internal highlight
+                ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.fillRect(-6, -12, 4, 24);
+            } else if (this.type === 1) {
+                // Ugly Plastic shopping Bag
+                ctx.fillStyle = "rgba(240, 240, 240, 0.85)";
+                ctx.strokeStyle = "rgba(150, 150, 150, 0.9)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-12, -10);
+                // handles
+                ctx.quadraticCurveTo(-15, -20, -5, -20);
+                ctx.quadraticCurveTo(-2, -10, -2, -10);
+                ctx.moveTo(12, -10);
+                ctx.quadraticCurveTo(15, -20, 5, -20);
+                ctx.quadraticCurveTo(2, -10, 2, -10);
+                // body
+                ctx.moveTo(-15, -10);
+                ctx.lineTo(15, -10);
+                ctx.quadraticCurveTo(20, 15, 10, 20);
+                ctx.lineTo(-10, 20);
+                ctx.quadraticCurveTo(-20, 15, -15, -10);
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                // Crumpled Metal Drink Can
+                ctx.fillStyle = "#80deea";
+                ctx.strokeStyle = "#00acc1";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, -10, 9, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillRect(-9, -10, 18, 20);
+                ctx.strokeRect(-9, -10, 18, 20);
+
+                ctx.fillStyle = "#b2ebf2";
+                ctx.fillRect(-6, -10, 4, 20);
+            }
+            ctx.restore();
+        }
+
+        contains(mx, my) {
+            const dx = mx - this.x;
+            const dy = my - this.y;
+            return (dx * dx + dy * dy) < (this.size * this.size);
+        }
+    }
+
+    class SproutedPlant {
+        constructor(x, y, scale = 1.0) {
+            this.x = x;
+            this.y = y;
+            this.maxHeight = (Math.random() * 40 + 50) * scale;
+            this.growth = 0.01; // Sprouting scale [0 -> 1]
+            this.petalsColor = `hsl(${Math.random() * 360}, 90%, 65%)`;
+            this.leafCount = Math.floor(Math.random() * 2) + 2;
+        }
+
+        update() {
+            if (this.growth < 1.0) {
+                this.growth += 0.015; // smooth speed growth
+                if (this.growth > 1.0) this.growth = 1.0;
+            }
+        }
+
+        draw() {
+            const h = this.maxHeight * this.growth;
+            
+            // Draw Stem
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 4 * this.growth;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            // S-curve wind wiggle stem
+            ctx.bezierCurveTo(this.x - 5, this.y - h * 0.4, this.x + 5, this.y - h * 0.7, this.x, this.y - h);
+            ctx.stroke();
+
+            if (this.growth > 0.4) {
+                // Draw side leaves
+                ctx.fillStyle = '#81c784';
+                // Left leaf
+                ctx.save();
+                ctx.translate(this.x - 3, this.y - h * 0.4);
+                ctx.scale(this.growth, this.growth);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 8, 4, -Math.PI/6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Right leaf
+                ctx.save();
+                ctx.translate(this.x + 3, this.y - h * 0.65);
+                ctx.scale(this.growth, this.growth);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 8, 4, Math.PI/6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Draw Flower at the tip
+            if (this.growth > 0.8) {
+                const flowerScale = (this.growth - 0.8) * 5; // scales up nicely [0 -> 1]
+                ctx.save();
+                ctx.translate(this.x, this.y - h);
+                ctx.scale(flowerScale, flowerScale);
+
+                // Draw gorgeous procedural colored petals
+                ctx.fillStyle = this.petalsColor;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.ellipse(0, -6, 5, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.rotate((Math.PI * 2) / 5);
+                }
+
+                // Flower Center
+                ctx.fillStyle = '#fdd835';
+                ctx.beginPath();
+                ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+    }
+
+    class MagicSproutTree {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.maxHeight = Math.random() * 50 + 85;
+            this.growth = 0.01;
+            this.branches = [];
+            this.generateBranches();
+        }
+
+        generateBranches() {
+            // Generate deterministic branches so visual stays consistent as it scales
+            this.branches.push({ angle: -Math.PI / 6, length: 0.55, offset: 0.45 });
+            this.branches.push({ angle: Math.PI / 5, length: 0.5, offset: 0.65 });
+            this.branches.push({ angle: -Math.PI / 10, length: 0.45, offset: 0.8 });
+        }
+
+        update() {
+            if (this.growth < 1.0) {
+                this.growth += 0.01;
+                if (this.growth > 1.0) this.growth = 1.0;
+            }
+        }
+
+        draw() {
+            const h = this.maxHeight * this.growth;
+            
+            // Draw Trunk
+            ctx.strokeStyle = '#8d6e63';
+            ctx.lineWidth = 10 * this.growth;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            // Slight lean for natural organic style
+            const tipX = this.x + 8 * Math.sin(this.growth);
+            const tipY = this.y - h;
+            ctx.quadraticCurveTo(this.x - 4, this.y - h * 0.5, tipX, tipY);
+            ctx.stroke();
+
+            // Draw limbs
+            if (this.growth > 0.4) {
+                ctx.strokeStyle = '#8d6e63';
+                this.branches.forEach(b => {
+                    if (this.growth > b.offset) {
+                        const limbGrowth = (this.growth - b.offset) / (1 - b.offset);
+                        ctx.lineWidth = 4 * limbGrowth;
+                        
+                        // Origin along the main trunk segment
+                        const bx = this.x + (tipX - this.x) * b.offset;
+                        const by = this.y - h * b.offset;
+
+                        const bxEnd = bx + Math.sin(b.angle) * (this.maxHeight * b.length) * limbGrowth;
+                        const byEnd = by - Math.cos(b.angle) * (this.maxHeight * b.length) * limbGrowth;
+
+                        ctx.beginPath();
+                        ctx.moveTo(bx, by);
+                        ctx.lineTo(bxEnd, byEnd);
+                        ctx.stroke();
+
+                        // Side foliage puff
+                        if (limbGrowth > 0.6) {
+                            ctx.fillStyle = '#66bb6a';
+                            ctx.beginPath();
+                            ctx.arc(bxEnd, byEnd, 12 * limbGrowth, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                });
+            }
+
+            // Draw main crowning foliage puff on top
+            if (this.growth > 0.7) {
+                const crownScale = (this.growth - 0.7) / 0.3;
+                ctx.fillStyle = '#4caf50';
+                ctx.beginPath();
+                ctx.arc(tipX, tipY, 24 * crownScale, 0, Math.PI * 2);
+                ctx.arc(tipX - 10, tipY - 8, 18 * crownScale, 0, Math.PI * 2);
+                ctx.arc(tipX + 12, tipY - 4, 16 * crownScale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Shiny yellow flower decorations on tree
+                if (crownScale > 0.8) {
+                    ctx.fillStyle = '#ffeb3b';
+                    ctx.beginPath();
+                    ctx.arc(tipX - 10, tipY - 4, 3, 0, Math.PI * 2);
+                    ctx.arc(tipX + 8, tipY + 6, 3, 0, Math.PI * 2);
+                    ctx.arc(tipX, tipY - 14, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+    }
+
+    // Stream Sparkle Particle
+    class SparkleParticle {
+        constructor(x, y, color = '#ffeb3b') {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.size = Math.random() * 5 + 3;
+            this.life = 1.0;
+            this.decay = Math.random() * 0.03 + 0.02;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.life -= this.decay;
+        }
+
+        draw() {
+            if (this.life <= 0) return;
+            ctx.save();
+            ctx.globalAlpha = this.life;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            // Draw cute cross/star shape
+            ctx.moveTo(this.x, this.y - this.size);
+            ctx.lineTo(this.x + this.size * 0.3, this.y - this.size * 0.3);
+            ctx.lineTo(this.x + this.size, this.y);
+            ctx.lineTo(this.x + this.size * 0.3, this.y + this.size * 0.3);
+            ctx.lineTo(this.x, this.y + this.size);
+            ctx.lineTo(this.x - this.size * 0.3, this.y + this.size * 0.3);
+            ctx.lineTo(this.x - this.size, this.y);
+            ctx.lineTo(this.x - this.size * 0.3, this.y - this.size * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    // Setup and state tracking instances
+    let smogList = [];
+    let trashList = [];
+    let flowerPlants = [];
+    let magicTrees = [];
+    let sparkleList = [];
+    
+    let activeDraggedTrash = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    
+    // Wave water offset trackers
+    let waterWaveOffset = 0;
+
+    function initEnvironment() {
+        const w = canvas.width / (window.devicePixelRatio || 1);
+        const h = canvas.height / (window.devicePixelRatio || 1);
+
+        // Generate sky smog
+        smogList = [];
+        for (let i = 0; i < 28; i++) {
+            smogList.push(new SmogParticle(w, h));
+        }
+
+        // Generate messy river water trash
+        trashList = [];
+        for (let i = 0; i < state.trashCount; i++) {
+            trashList.push(new FloatingTrash(w, h));
+        }
+
+        // Clear green life lists
+        flowerPlants = [];
+        magicTrees = [];
+        sparkleList = [];
+
+        // Seed default background state details
+        state.smogPercentage = 100;
+        state.cleanWaterPercentage = 0;
+        state.plantedSeedsCount = 0;
+        state.completed.smog = false;
+        state.completed.water = false;
+        state.completed.plant = false;
+
+        // Reset badge visuals back to dirty default
+        updateBadges();
+    }
+
+    function updateBadges() {
+        // Smog State Style
+        if (state.completed.smog) {
+            badges.smog.className = "px-3 py-1 bg-sky-100 text-sky-600 rounded-full border border-sky-300 flex items-center gap-1 font-bold scale-110 transition-transform duration-300";
+            badges.smog.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i> Sky Restored`;
+        } else {
+            badges.smog.className = "px-3 py-1 bg-stone-100 text-stone-500 rounded-full border border-stone-200 flex items-center gap-1";
+            badges.smog.innerHTML = `<i data-lucide="cloud" class="w-4 h-4"></i> Sky Smoky`;
+        }
+
+        // Water State Style
+        if (state.completed.water) {
+            badges.water.className = "px-3 py-1 bg-blue-100 text-blue-600 rounded-full border border-blue-300 flex items-center gap-1 font-bold scale-110 transition-transform duration-300";
+            badges.water.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i> River Clean`;
+        } else {
+            badges.water.className = "px-3 py-1 bg-stone-100 text-stone-500 rounded-full border border-stone-200 flex items-center gap-1";
+            badges.water.innerHTML = `<i data-lucide="droplet" class="w-4 h-4"></i> River Messy`;
+        }
+
+        // Sprout Plant State Style
+        if (state.completed.plant) {
+            badges.plant.className = "px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full border border-emerald-300 flex items-center gap-1 font-bold scale-110 transition-transform duration-300";
+            badges.plant.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i> Forest Alive`;
+        } else {
+            badges.plant.className = "px-3 py-1 bg-stone-100 text-stone-500 rounded-full border border-stone-200 flex items-center gap-1";
+            badges.plant.innerHTML = `<i data-lucide="sprout" class="w-4 h-4"></i> Trees Missing`;
+        }
+        lucide.createIcons();
+    }
+
+    // Main Continuous Draw loop
+    function loop() {
+        const w = canvas.width / (window.devicePixelRatio || 1);
+        const h = canvas.height / (window.devicePixelRatio || 1);
+
+        // 1. SKY BACKGROUND COLOR SHIFTING (Murky grey to gorgeous blue)
+        const transitionFactor = (100 - state.smogPercentage) / 100; // 0 (murky) to 1 (bright)
+        
+        // Linear Interpolate color elements for dynamic responsive sky background gradient
+        // Dark murky grey-violet sky: rgb(155, 150, 160) -> rgb(110, 125, 140)
+        // Glorious sky blue: rgb(135, 206, 250) -> rgb(224, 247, 250)
+        const skyR1 = Math.round(155 + (135 - 155) * transitionFactor);
+        const skyG1 = Math.round(150 + (206 - 150) * transitionFactor);
+        const skyB1 = Math.round(160 + (250 - 160) * transitionFactor);
+
+        const skyR2 = Math.round(110 + (224 - 110) * transitionFactor);
+        const skyG2 = Math.round(125 + (247 - 125) * transitionFactor);
+        const skyB2 = Math.round(140 + (250 - 140) * transitionFactor);
+
+        let skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+        skyGrad.addColorStop(0, `rgb(${skyR1}, ${skyG1}, ${skyB1})`);
+        skyGrad.addColorStop(0.55, `rgb(${skyR2}, ${skyG2}, ${skyB2})`);
+        skyGrad.addColorStop(1, '#e8f5e9'); // soft lawn bottom zone transition blend
+
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // 2. SUNSHINE RAYS (Reveal as smog reduces)
+        if (transitionFactor > 0.1) {
+            ctx.save();
+            ctx.globalAlpha = transitionFactor * 0.45;
+            let sunCenterY = h * 0.22;
+            let sunCenterX = w * 0.15;
+            
+            // Draw shining sun base
+            ctx.fillStyle = "#ffeb3b";
+            ctx.beginPath();
+            ctx.arc(sunCenterX, sunCenterY, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Beams
+            ctx.strokeStyle = "rgba(255, 235, 59, 0.4)";
+            ctx.lineWidth = 14;
+            const raysNum = 8;
+            for (let i = 0; i < raysNum; i++) {
+                let rAngle = (i / raysNum) * Math.PI * 2 + (Date.now() * 0.0003);
+                ctx.beginPath();
+                ctx.moveTo(sunCenterX + Math.cos(rAngle) * 45, sunCenterY + Math.sin(rAngle) * 45);
+                ctx.lineTo(sunCenterX + Math.cos(rAngle) * 110, sunCenterY + Math.sin(rAngle) * 110);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // 3. BACKGROUND HILLS (Grey-green to vibrant rich emerald-green)
+        // Hill 1: Deep Back Hill
+        const hillColorFactor = (state.cleanWaterPercentage + (100 - state.smogPercentage) + (Math.min(state.plantedSeedsCount, 10)*10)) / 300;
+        
+        // Interpolate hills colors
+        const backHillColor = `rgb(${Math.round(145 - 35 * hillColorFactor)}, ${Math.round(160 + 25 * hillColorFactor)}, ${Math.round(145 - 25 * hillColorFactor)})`;
+        const frontGroundColor = `rgb(${Math.round(120 - 40 * hillColorFactor)}, ${Math.round(145 + 35 * hillColorFactor)}, ${Math.round(110 - 30 * hillColorFactor)})`;
+
+        ctx.fillStyle = backHillColor;
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.5);
+        ctx.quadraticCurveTo(w * 0.35, h * 0.4, w * 0.7, h * 0.52);
+        ctx.quadraticCurveTo(w * 0.85, h * 0.56, w, h * 0.48);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        // Hill 2: Mid-ground grassy knoll soil
+        ctx.fillStyle = frontGroundColor;
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.58);
+        ctx.quadraticCurveTo(w * 0.25, h * 0.65, w * 0.5, h * 0.56);
+        ctx.quadraticCurveTo(w * 0.75, h * 0.48, w, h * 0.6);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        // 4. DRAW PLANTED TREES & FLOWERS GROWING ON KNOLLS
+        magicTrees.forEach(tree => {
+            tree.update();
+            tree.draw();
+        });
+
+        flowerPlants.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        // 5. THE WATER RIVER CANYON SYSTEM (Bottom 30%)
+        // Interpolate wave water colors dynamically based on pollution trash state
+        const waterR = Math.round(115 - 85 * (state.cleanWaterPercentage / 100)); // Murky dark purple brown to rich teal-blue
+        const waterG = Math.round(125 + 55 * (state.cleanWaterPercentage / 100));
+        const waterB = Math.round(145 + 75 * (state.cleanWaterPercentage / 100));
+
+        // Background dark muddy flow base
+        ctx.fillStyle = `rgb(${waterR - 25}, ${waterG - 20}, ${waterB - 15})`;
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.7);
+        ctx.quadraticCurveTo(w * 0.5, h * 0.68, w, h * 0.74);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        // Dynamic flowing sinus waves layer 1
+        waterWaveOffset += 0.015;
+        ctx.fillStyle = `rgba(${waterR}, ${waterG}, ${waterB}, 0.85)`;
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.73);
+        for (let ix = 0; ix <= w; ix += 20) {
+            let offsetHeight = Math.sin(ix * 0.008 + waterWaveOffset) * 9;
+            ctx.lineTo(ix, h * 0.73 + offsetHeight);
+        }
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        // Forefront shimmering flow lines
+        ctx.fillStyle = `rgba(${waterR + 30}, ${waterG + 40}, ${waterB + 50}, 0.5)`;
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.76);
+        for (let ix = 0; ix <= w; ix += 30) {
+            let offsetHeight = Math.sin(ix * 0.012 - waterWaveOffset * 1.5) * 6;
+            ctx.lineTo(ix, h * 0.76 + offsetHeight);
+        }
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        // Draw active floating water plastic trash objects
+        trashList.forEach(trash => {
+            trash.update();
+            trash.draw();
+        });
+
+        // 6. DRAW AIR SMOG PARTICLES ON TOP LAYER
+        smogList.forEach(smog => {
+            smog.update(w, h);
+            smog.draw();
+        });
+
+        // 7. DRAG AREA TARGET RECYCLING BIN DOTTED HIGHLIGHT VISUAL
+        if (currentTool === 'water' && !state.completed.water) {
+            ctx.save();
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 8]);
+            // Target zone highlight circle around overlay area
+            ctx.beginPath();
+            ctx.arc(w - 75, h * 0.5, 60, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 8. SPARKLE SPRAY PARTICLES ENGINE
+        sparkleList.forEach((sp, index) => {
+            sp.update();
+            sp.draw();
+            // Prune dead sparkles
+            if (sp.life <= 0) {
+                sparkleList.splice(index, 1);
+            }
+        });
+
+        // Auto-refresh Animation Loop frame
+        requestAnimationFrame(loop);
+    }
+
+    // Helper tools for relative pointer coordination matching canvas viewport boundaries
+    function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Fallback checks for mobile touch events
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        }
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    // Handlers
+    function handlePointerDown(e) {
+        sfx.init(); // Initialize audio state on direct action trigger
+        const pos = getPointerPos(e);
+
+        if (currentTool === 'water') {
+            // Check if picking up trash object
+            for (let i = trashList.length - 1; i >= 0; i--) {
+                if (trashList[i].contains(pos.x, pos.y)) {
+                    activeDraggedTrash = trashList[i];
+                    activeDraggedTrash.isDragged = true;
+                    dragOffsetX = pos.x - activeDraggedTrash.x;
+                    dragOffsetY = pos.y - activeDraggedTrash.y;
+                    
+                    speakPip("Yes! Pull it towards the dotted green recycle circle!", true);
+                    sfx.playBubble();
+                    break;
+                }
+            }
+        } else if (currentTool === 'plant') {
+            const h = canvas.height / (window.devicePixelRatio || 1);
+            // Click to grow on soil layers constraints
+            if (pos.y > h * 0.48 && pos.y < h * 0.7) {
+                // Drop seed and grow!
+                const isBigTree = Math.random() > 0.4;
+                if (isBigTree) {
+                    magicTrees.push(new MagicSproutTree(pos.x, pos.y));
+                } else {
+                    flowerPlants.push(new SproutedPlant(pos.x, pos.y, 1.0));
+                }
+                
+                state.plantedSeedsCount++;
+                sfx.playChime(329.63 + (state.plantedSeedsCount * 30)); // Raising scale pitch
+
+                // Spawn golden sparkle bursts on planting location
+                for (let k = 0; k < 12; k++) {
+                    sparkleList.push(new SparkleParticle(pos.x, pos.y, '#c5e1a5'));
+                }
+
+                // Check Forest status
+                if (state.plantedSeedsCount >= 7 && !state.completed.plant) {
+                    state.completed.plant = true;
+                    speakPip(MascotSay.plantFullyGrown, true);
+                    sfx.playChime(523.25);
+                    updateBadges();
+                    checkGlobalVictory();
+                } else if (!state.completed.plant) {
+                    speakPip(MascotSay.plantPartiallyGrown, true);
+                }
+            } else {
+                speakPip("Click on the green grassy hills to plant our magical trees!", false);
+            }
+        }
+    }
+
+    function handlePointerMove(e) {
+        const pos = getPointerPos(e);
+        const w = canvas.width / (window.devicePixelRatio || 1);
+        const h = canvas.height / (window.devicePixelRatio || 1);
+
+        if (currentTool === 'smog') {
+            // Eraser logic clearing smog particles within a radial buffer
+            const swipeRadius = 55;
+            let clearedCountThisStroke = 0;
+
+            // Spawn breeze trail sparkles
+            if (Math.random() > 0.4) {
+                sparkleList.push(new SparkleParticle(pos.x, pos.y, '#e0f7fa'));
+            }
+
+            for (let i = smogList.length - 1; i >= 0; i--) {
+                let smog = smogList[i];
+                let dx = pos.x - smog.x;
+                let dy = pos.y - smog.y;
+                if ((dx * dx + dy * dy) < (swipeRadius * swipeRadius)) {
+                    // Eliminate smog
+                    smogList.splice(i, 1);
+                    clearedCountThisStroke++;
+                }
+            }
+
+            if (clearedCountThisStroke > 0) {
+                if (Math.random() > 0.85) sfx.playSwoosh();
+                
+                // Recalculate remaining smog percentage
+                state.smogPercentage = Math.round((smogList.length / 28) * 100);
+                
+                if (state.smogPercentage <= 10 && !state.completed.smog) {
+                    state.completed.smog = true;
+                    speakPip(MascotSay.smogFullyCleared, true);
+                    sfx.playChime(440);
+                    updateBadges();
+                    checkGlobalVictory();
+                } else if (!state.completed.smog && Math.random() > 0.98) {
+                    speakPip(MascotSay.smogPartiallyCleared, true);
+                }
+            }
+        } else if (currentTool === 'water' && activeDraggedTrash) {
+            activeDraggedTrash.x = pos.x - dragOffsetX;
+            activeDraggedTrash.y = pos.y - dragOffsetY;
+
+            // Check if user has dragged trash into recycling zone area (w - 75, h * 0.5)
+            const dx = activeDraggedTrash.x - (w - 75);
+            const dy = activeDraggedTrash.y - (h * 0.5);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 80) {
+                // Trash recycled successfully!
+                sfx.playBubble();
+                // Splash sparkle splash
+                for (let k = 0; k < 15; k++) {
+                    sparkleList.push(new SparkleParticle(activeDraggedTrash.x, activeDraggedTrash.y, '#64b5f6'));
+                }
+
+                // Remove from list
+                const index = trashList.indexOf(activeDraggedTrash);
+                if (index > -1) trashList.splice(index, 1);
+                
+                activeDraggedTrash = null;
+
+                // Adjust clean index percentages
+                const recycledCount = state.trashCount - trashList.length;
+                state.cleanWaterPercentage = Math.round((recycledCount / state.trashCount) * 100);
+
+                if (state.cleanWaterPercentage >= 100 && !state.completed.water) {
+                    state.completed.water = true;
+                    speakPip(MascotSay.waterFullyCleaned, true);
+                    sfx.playChime(493.88);
+                    updateBadges();
+                    checkGlobalVictory();
+                } else if (!state.completed.water) {
+                    speakPip(MascotSay.waterPartiallyCleaned, true);
+                }
+            }
+        }
+    }
+
+    function handlePointerUp() {
+        if (activeDraggedTrash) {
+            // Drop it back into water if missed recycle area
+            activeDraggedTrash.isDragged = false;
+            activeDraggedTrash = null;
+            speakPip("Keep trying! Drag the trash inside the recycling circle to clean the river.", false);
+        }
+    }
+
+    // Add both traditional mouse and modern mobile touch event frameworks
+    canvas.addEventListener('mousedown', handlePointerDown);
+    canvas.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+
+    canvas.addEventListener('touchstart', (e) => {
+        handlePointerDown(e);
+        e.preventDefault();
+    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => {
+        handlePointerMove(e);
+        e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('touchend', handlePointerUp);
+
+    // Activating Selected Interactive Action items
+    function selectTool(toolName) {
+        currentTool = toolName;
+        
+        // Update selection styles (glowing borders, background colors)
+        Object.keys(tools).forEach(k => {
+            if (k === toolName) {
+                tools[k].classList.remove('border-stone-200', 'bg-white/80', 'text-stone-600');
+                tools[k].classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'scale-105', 'shadow-inner');
+            } else {
+                tools[k].classList.add('border-stone-200', 'bg-white/80', 'text-stone-600');
+                tools[k].classList.remove('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'scale-105', 'shadow-inner');
+            }
+        });
+
+        // Set matching cursor types and dynamic hints
+        if (toolName === 'smog') {
+            canvas.style.cursor = 'crosshair';
+            interactionGuide.textContent = "💨 Drag your finger across the sky to clear the smog!";
+            speakPip(MascotSay.smogSelected[Math.floor(Math.random() * 2)]);
+            recycleBinOverlay.style.opacity = '0';
+        } else if (toolName === 'water') {
+            canvas.style.cursor = 'grab';
+            interactionGuide.textContent = "🗑️ Drag floating water trash items directly into the Recycling Circle!";
+            speakPip(MascotSay.waterSelected[Math.floor(Math.random() * 2)]);
+            
+            // Highlight recycling target area overlay
+            if (!state.completed.water) {
+                recycleBinOverlay.style.opacity = '1';
+            }
+        } else if (toolName === 'plant') {
+            canvas.style.cursor = 'pointer';
+            interactionGuide.textContent = "🌱 Tap on the green grass knolls to sprout beautiful wild forests!";
+            speakPip(MascotSay.plantSelected[Math.floor(Math.random() * 2)]);
+            recycleBinOverlay.style.opacity = '0';
+        }
+
+        // Pop open instruction bar
+        interactionGuide.style.opacity = '1';
+    }
+
+    // Attach click events on action buttons
+    tools.smog.addEventListener('click', () => selectTool('smog'));
+    tools.water.addEventListener('click', () => selectTool('water'));
+    tools.plant.addEventListener('click', () => selectTool('plant'));
+
+    // Reset systems
+    function resetPlayground() {
+        initEnvironment();
+        currentTool = null;
+        Object.keys(tools).forEach(k => {
+            tools[k].classList.add('border-stone-200', 'bg-white/80', 'text-stone-600');
+            tools[k].classList.remove('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'scale-105');
+        });
+        interactionGuide.style.opacity = '0';
+        recycleBinOverlay.style.opacity = '0';
+        speakPip("Let's help make the world colorful and clean once again! Pick a tool below to begin.", true);
+    }
+
+    resetBtn.addEventListener('click', () => {
+        sfx.playChime(261.63);
+        resetPlayground();
+    });
+
+    // Check if player has solved all nature tasks
+    function checkGlobalVictory() {
+        if (state.completed.smog && state.completed.water && state.completed.plant) {
+            setTimeout(() => {
+                sfx.playSuccessFanfare();
+                speakPip(MascotSay.allCompleted, true);
+                
+                // Animate victory celebration modal into view
+                victoryOverlay.classList.remove('pointer-events-none');
+                gsap.to(victoryOverlay, { opacity: 1, duration: 0.5 });
+                gsap.fromTo(victoryCard, { scale: 0.8, y: 50 }, { scale: 1, y: 0, duration: 0.8, ease: "back.out(1.7)" });
+
+                // Spurt celebratory happy birds flying across sky!
+                triggerHappyBirdsCelebration();
+            }, 1000);
+        }
+    }
+
+    function triggerHappyBirdsCelebration() {
+        const w = canvas.width / (window.devicePixelRatio || 1);
+        const h = canvas.height / (window.devicePixelRatio || 1);
+        // Spawns 40 flying flower petal/leaf sparkles inside visual playground area
+        for (let j = 0; j < 60; j++) {
+            setTimeout(() => {
+                sparkleList.push(new SparkleParticle(
+                    Math.random() * w,
+                    h * 0.4 + Math.random() * h * 0.2,
+                    `hsl(${Math.random() * 60 + 40}, 95%, 65%)` // glowing gold-greens
+                ));
+            }, j * 40);
+        }
+    }
+
+    // Modal click buttons
+    closeVictoryBtn.addEventListener('click', () => {
+        gsap.to(victoryOverlay, { 
+            opacity: 0, 
+            duration: 0.4, 
+            onComplete: () => {
+                victoryOverlay.classList.add('pointer-events-none');
+            }
+        });
+    });
+
+    victoryResetBtn.addEventListener('click', () => {
+        gsap.to(victoryOverlay, { 
+            opacity: 0, 
+            duration: 0.4, 
+            onComplete: () => {
+                victoryOverlay.classList.add('pointer-events-none');
+                resetPlayground();
+            }
+        });
+    });
+
+    // Start button activation triggers transitions
+    startBtn.addEventListener('click', () => {
+        sfx.init();
+        sfx.playChime(523.25); // high positive welcome chime
+        
+        // Smoothly fade out the introduction book page
+        gsap.to(introOverlay, { 
+            opacity: 0, 
+            duration: 0.8, 
+            onComplete: () => {
+                introOverlay.classList.add('hidden');
+            }
+        });
+    });
+
+    // Start running active engine
+    window.onload = function() {
+        // Initialize setup variables
+        initEnvironment();
+        // Start continuous visual cycle render loop
+        loop();
+        // Trigger lucide icon elements loading inside document templates
+        lucide.createIcons();
+    };
+</script>
+</body>
+</html>
